@@ -21,6 +21,10 @@ class Profesor
     #[ORM\Column(length: 255)]
     private ?string $apellidos = null;
 
+    #[ORM\OneToOne(inversedBy: 'profesorCodigo', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Aula $imparte = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -46,6 +50,18 @@ class Profesor
     public function setApellidos(string $apellidos): static
     {
         $this->apellidos = $apellidos;
+
+        return $this;
+    }
+
+    public function getImparte(): ?Aula
+    {
+        return $this->imparte;
+    }
+
+    public function setImparte(Aula $imparte): static
+    {
+        $this->imparte = $imparte;
 
         return $this;
     }

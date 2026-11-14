@@ -22,8 +22,9 @@ class RegistroDiario
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $comida = null;
 
-    #[ORM\Column]
-    private ?int $alumnoCodigo = null;
+    #[ORM\OneToOne(mappedBy: 'tiene', cascade: ['persist', 'remove'])]
+    private ?Alumnos $alumnoCodigo = null;
+
 
     public function getId(): ?int
     {
@@ -54,15 +55,22 @@ class RegistroDiario
         return $this;
     }
 
-    public function getAlumnoCodigo(): ?int
+    public function getAlumnoCodigo(): ?Alumnos
     {
         return $this->alumnoCodigo;
     }
 
-    public function setAlumnoCodigo(int $alumnoCodigo): static
+    public function setAlumnoCodigo(Alumnos $alumnoCodigo): static
     {
+        // set the owning side of the relation if necessary
+        if ($alumnoCodigo->getTiene() !== $this) {
+            $alumnoCodigo->setTiene($this);
+        }
+
         $this->alumnoCodigo = $alumnoCodigo;
 
         return $this;
     }
+
+  
 }

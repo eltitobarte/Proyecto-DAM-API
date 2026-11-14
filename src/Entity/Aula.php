@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AulaRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AulaRepository::class)]
@@ -18,11 +20,20 @@ class Aula
     #[ORM\Column(length: 255)]
     private ?string $aulaNombre = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $profesorNombre = null;
+    /**
+     * @var Collection<int, Alumnos>
+     */
+    #[ORM\OneToMany(targetEntity: Alumnos::class, mappedBy: 'aulaCodigo', orphanRemoval: true)]
+    private Collection $pertenece;
 
-    #[ORM\Column]
-    private ?int $idProfesor = null;
+    #[ORM\OneToOne(mappedBy: 'imparte', cascade: ['persist', 'remove'])]
+    private ?Profesor $profesorCodigo = null;
+
+    public function __construct()
+    {
+        $this->pertenece = new ArrayCollection();
+    }
+
 
     public function getId(): ?int
     {
@@ -41,27 +52,51 @@ class Aula
         return $this;
     }
 
-    public function getProfesorNombre(): ?string
+    /**
+     * @return Collection<int, Alumnos>
+     */
+    public function getPertenece(): Collection
     {
-        return $this->profesorNombre;
+        return $this->pertenece;
     }
 
-    public function setProfesorNombre(string $profesorNombre): static
+    public function addPertenece(Alumnos $pertenece): static
     {
-        $this->profesorNombre = $profesorNombre;
+        if (!$this->pertenece->contains($pertenece)) {
+            $this->pertenece->add($pertenece);
+            $pertenece->setAulaCodigo($this);
+        }
 
         return $this;
     }
 
-    public function getIdProfesor(): ?int
+    public function removePertenece(Alumnos $pertenece): static
     {
-        return $this->idProfesor;
-    }
-
-    public function setIdProfesor(int $idProfesor): static
-    {
-        $this->idProfesor = $idProfesor;
+        if ($this->pertenece->removeElement($pertenece)) {
+            // set the owning side to null (unless already changed)
+            if ($pertenece->getAulaCodigo() === $this) {
+                $pertenece->setAulaCodigo(null);
+            }
+        }
 
         return $this;
     }
+
+    public function getProfesorCodigo(): ?Profesor
+    {
+        return $this->profesorCodigo;
+    }
+
+    public function setProfesorCodigo(Profesor $profesorCodigo): static
+    {
+        // set the owning side of the relation if necessary
+        if ($profesorCodigo->getImparte() !== $this) {
+            $profesorCodigo->setImparte($this);
+        }
+
+        $this->profesorCodigo = $profesorCodigo;
+
+        return $this;
+    }
+
 }

@@ -22,8 +22,10 @@ class Altas
     #[ORM\Column(length: 255)]
     private ?string $estado = null;
 
-    #[ORM\Column]
-    private ?int $idAdmin = null;
+    #[ORM\ManyToOne(inversedBy: 'gestionAltas')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Administracion $idAdmin = null;
+
 
     public function getId(): ?int
     {
@@ -54,15 +56,16 @@ class Altas
         return $this;
     }
 
-    public function getIdAdmin(): ?int
+    public function getIdAdmin(): ?Administracion
     {
         return $this->idAdmin;
     }
 
-    public function setIdAdmin(int $idAdmin): static
+    public function setIdAdmin(?Administracion $idAdmin): static
     {
         $this->idAdmin = $idAdmin;
 
         return $this;
     }
+
 }
