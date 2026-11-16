@@ -8,12 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProfesorRepository::class)]
 #[ApiResource]
-class Profesor
+class Profesor extends Usuarios
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+   
 
     #[ORM\Column(length: 255)]
     private ?string $nombre = null;
@@ -25,10 +22,6 @@ class Profesor
     #[ORM\JoinColumn(nullable: false)]
     private ?Aula $imparte = null;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getNombre(): ?string
     {

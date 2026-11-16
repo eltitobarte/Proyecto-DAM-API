@@ -2,43 +2,34 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
 use App\Repository\UsuariosRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UsuariosRepository::class)]
-#[ApiResource]
-class Usuarios
+#[ORM\InheritanceType('JOINED')]
+#[ORM\DiscriminatorColumn(name: 'rol', type: 'string', length: 30)]
+#[ORM\DiscriminatorMap([
+    'administrador'  => Administrador::class,
+    'administracion' => Administracion::class,
+    'tutor_legal'    => TutorLegal::class,
+    'profesor'       => Profesor::class,
+])]
+abstract class Usuarios
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $rol = null;
+    protected ?int $id = null;
 
     #[ORM\Column(length: 8)]
-    private ?string $contrasenya = null;
+    protected ?string $contrasenya = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $correoElectronico = null;
+    protected ?string $correoElectronico = null;
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getRol(): ?string
-    {
-        return $this->rol;
-    }
-
-    public function setRol(string $rol): static
-    {
-        $this->rol = $rol;
-
-        return $this;
     }
 
     public function getContrasenya(): ?string

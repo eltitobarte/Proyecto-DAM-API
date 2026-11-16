@@ -10,12 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AdministracionRepository::class)]
 #[ApiResource]
-class Administracion
+class Administracion extends Usuarios
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+  
 
     #[ORM\Column(length: 255)]
     private ?string $nombre = null;
@@ -39,11 +36,6 @@ class Administracion
     {
         $this->gestionAltas = new ArrayCollection();
         $this->gestionBajas = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getNombre(): ?string
