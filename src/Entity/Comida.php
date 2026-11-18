@@ -2,12 +2,29 @@
 
 namespace App\Entity;
 
-use App\Repository\ComidaRepository;
-use Doctrine\DBAL\Types\Types;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\State\ComidaProcessor;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: ComidaRepository::class)]
+#[ApiResource(operations: [
+    new GetCollection(),
+    new Get(),
+    new Post(processor: ComidaProcessor::class),
+    new Put(processor: ComidaProcessor::class),
+    new Patch(processor: ComidaProcessor::class),
+    new Delete(),
+])]
 class Comida
+
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -17,8 +34,13 @@ class Comida
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $fecha = null;
 
-    #[ORM\OneToOne(mappedBy: 'recibe', cascade: ['persist', 'remove'])]
-    private ?Alumnos $alumnoCodigo = null;
+    #[ORM\ManyToOne(inversedBy: 'comidas')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Alumnos $alumno = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Menu $menu = null;
 
     public function getId(): ?int
     {
@@ -33,24 +55,28 @@ class Comida
     public function setFecha(\DateTime $fecha): static
     {
         $this->fecha = $fecha;
-
         return $this;
     }
 
-    public function getAlumnoCodigo(): ?Alumnos
+    public function getAlumno(): ?Alumnos
     {
-        return $this->alumnoCodigo;
+        return $this->alumno;
     }
 
-    public function setAlumnoCodigo(Alumnos $alumnoCodigo): static
+    public function setAlumno(?Alumnos $alumno): static
     {
-        // set the owning side of the relation if necessary
-        if ($alumnoCodigo->getRecibe() !== $this) {
-            $alumnoCodigo->setRecibe($this);
-        }
+        $this->alumno = $alumno;
+        return $this;
+    }
 
-        $this->alumnoCodigo = $alumnoCodigo;
+    public function getMenu(): ?Menu
+    {
+        return $this->menu;
+    }
 
+    public function setMenu(?Menu $menu): static
+    {
+        $this->menu = $menu;
         return $this;
     }
 }

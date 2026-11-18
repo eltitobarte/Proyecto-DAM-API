@@ -3,12 +3,26 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Repository\AltasRepository;
-use Doctrine\DBAL\Types\Types;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\State\AltaProcessor;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: AltasRepository::class)]
-#[ApiResource]
+#[ApiResource(operations: [
+    new GetCollection(),
+    new Get(),
+    new Post(processor: AltaProcessor::class),
+    new Put(processor: AltaProcessor::class),
+    new Patch(processor: AltaProcessor::class),
+    new Delete(),
+])]
 class Altas
 {
     #[ORM\Id]
@@ -26,6 +40,9 @@ class Altas
     #[ORM\JoinColumn(nullable: false)]
     private ?Administracion $idAdmin = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Alumnos $alumno = null;
 
     public function getId(): ?int
     {
@@ -40,7 +57,6 @@ class Altas
     public function setFechaAlta(\DateTime $fechaAlta): static
     {
         $this->fechaAlta = $fechaAlta;
-
         return $this;
     }
 
@@ -52,7 +68,6 @@ class Altas
     public function setEstado(string $estado): static
     {
         $this->estado = $estado;
-
         return $this;
     }
 
@@ -64,8 +79,17 @@ class Altas
     public function setIdAdmin(?Administracion $idAdmin): static
     {
         $this->idAdmin = $idAdmin;
-
         return $this;
     }
 
+    public function getAlumno(): ?Alumnos
+    {
+        return $this->alumno;
+    }
+
+    public function setAlumno(?Alumnos $alumno): static
+    {
+        $this->alumno = $alumno;
+        return $this;
+    }
 }

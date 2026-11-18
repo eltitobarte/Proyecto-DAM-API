@@ -3,13 +3,28 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\TutorLegalRepository;
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 
-#[ORM\Entity(repositoryClass: TutorLegalRepository::class)]
-#[ApiResource]
+#[ORM\Entity(repositoryClass: TutorLegalRepository::class)] // (o el repositorio correspondiente)
+#[ApiResource(operations: [
+    new GetCollection(),
+    new Get(),
+    new Post(),
+    new Put(),
+    new Patch(),
+    new Delete(),
+])]
+
 class TutorLegal extends Usuarios
 {
   
@@ -34,6 +49,7 @@ class TutorLegal extends Usuarios
 
     public function __construct()
     {
+        parent::__construct();
         $this->responsable = new ArrayCollection();
         $this->chatea = new ArrayCollection();
     }

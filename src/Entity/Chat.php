@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ChatRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+
 
 #[ORM\Entity(repositoryClass: ChatRepository::class)]
 #[ApiResource]
@@ -16,11 +18,13 @@ class Chat
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?int $idUsuario = null;
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Usuarios $remitente = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $nombreUsuario = null;
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Usuarios $destinatario = null;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $mensaje = null;
@@ -28,32 +32,35 @@ class Chat
     #[ORM\Column]
     private ?\DateTimeImmutable $fechaEnvio = null;
 
+    public function __construct()
+    {
+        $this->fechaEnvio = new \DateTimeImmutable();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getIdUsuario(): ?int
+    public function getRemitente(): ?Usuarios
     {
-        return $this->idUsuario;
+        return $this->remitente;
     }
 
-    public function setIdUsuario(int $idUsuario): static
+    public function setRemitente(?Usuarios $remitente): static
     {
-        $this->idUsuario = $idUsuario;
-
+        $this->remitente = $remitente;
         return $this;
     }
 
-    public function getNombreUsuario(): ?string
+    public function getDestinatario(): ?Usuarios
     {
-        return $this->nombreUsuario;
+        return $this->destinatario;
     }
 
-    public function setNombreUsuario(string $nombreUsuario): static
+    public function setDestinatario(?Usuarios $destinatario): static
     {
-        $this->nombreUsuario = $nombreUsuario;
-
+        $this->destinatario = $destinatario;
         return $this;
     }
 
@@ -65,7 +72,6 @@ class Chat
     public function setMensaje(string $mensaje): static
     {
         $this->mensaje = $mensaje;
-
         return $this;
     }
 
@@ -77,7 +83,6 @@ class Chat
     public function setFechaEnvio(\DateTimeImmutable $fechaEnvio): static
     {
         $this->fechaEnvio = $fechaEnvio;
-
         return $this;
     }
 }

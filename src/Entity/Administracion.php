@@ -3,13 +3,27 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Repository\AdministracionRepository;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\State\UserPasswordHasherProcessor;
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 
-#[ORM\Entity(repositoryClass: AdministracionRepository::class)]
-#[ApiResource]
+#[ORM\Entity(repositoryClass: ProfesorRepository::class)] // (o el repositorio correspondiente)
+#[ApiResource(operations: [
+    new GetCollection(),
+    new Get(),
+    new Post(processor: UserPasswordHasherProcessor::class),
+    new Put(processor: UserPasswordHasherProcessor::class),
+    new Patch(processor: UserPasswordHasherProcessor::class),
+    new Delete(),
+])]
 class Administracion extends Usuarios
 {
   
@@ -34,6 +48,7 @@ class Administracion extends Usuarios
 
     public function __construct()
     {
+        parent::__construct();
         $this->gestionAltas = new ArrayCollection();
         $this->gestionBajas = new ArrayCollection();
     }

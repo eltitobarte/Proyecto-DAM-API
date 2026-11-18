@@ -7,6 +7,7 @@ use App\Repository\AulaRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: AulaRepository::class)]
 #[ApiResource]
@@ -20,20 +21,26 @@ class Aula
     #[ORM\Column(length: 255)]
     private ?string $aulaNombre = null;
 
+    #[ORM\Column]
+    private ?int $capacidadMaxima = null;
+
     /**
      * @var Collection<int, Alumnos>
      */
-    #[ORM\OneToMany(targetEntity: Alumnos::class, mappedBy: 'aulaCodigo', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Alumnos::class, mappedBy: 'aulaCodigo')]
     private Collection $pertenece;
 
-    #[ORM\OneToOne(mappedBy: 'imparte', cascade: ['persist', 'remove'])]
-    private ?Profesor $profesorCodigo = null;
+    /**
+     * @var Collection<int, Profesor>
+     */
+    #[ORM\OneToMany(targetEntity: Profesor::class, mappedBy: 'imparte')]
+    private Collection $profesores;
 
     public function __construct()
     {
         $this->pertenece = new ArrayCollection();
+        $this->profesores = new ArrayCollection();
     }
-
 
     public function getId(): ?int
     {
@@ -48,13 +55,21 @@ class Aula
     public function setAulaNombre(string $aulaNombre): static
     {
         $this->aulaNombre = $aulaNombre;
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, Alumnos>
-     */
+    public function getCapacidadMaxima(): ?int
+    {
+        return $this->capacidadMaxima;
+    }
+
+    public function setCapacidadMaxima(int $capacidadMaxima): static
+    {
+        $this->capacidadMaxima = $capacidadMaxima;
+        return $this;
+    }
+
+    /** @return Collection<int, Alumnos> */
     public function getPertenece(): Collection
     {
         return $this->pertenece;
@@ -66,37 +81,41 @@ class Aula
             $this->pertenece->add($pertenece);
             $pertenece->setAulaCodigo($this);
         }
-
         return $this;
     }
 
     public function removePertenece(Alumnos $pertenece): static
     {
         if ($this->pertenece->removeElement($pertenece)) {
-            // set the owning side to null (unless already changed)
             if ($pertenece->getAulaCodigo() === $this) {
                 $pertenece->setAulaCodigo(null);
             }
         }
-
         return $this;
     }
 
-    public function getProfesorCodigo(): ?Profesor
+    /** @return Collection<int, Profesor> */
+    public function getProfesores(): Collection
     {
-        return $this->profesorCodigo;
+        return $this->profesores;
     }
 
-    public function setProfesorCodigo(Profesor $profesorCodigo): static
+    public function addProfesor(Profesor $profesor): static
     {
-        // set the owning side of the relation if necessary
-        if ($profesorCodigo->getImparte() !== $this) {
-            $profesorCodigo->setImparte($this);
+        if (!$this->profesores->contains($profesor)) {
+            $this->profesores->add($profesor);
+            $profesor->setImparte($this);
         }
-
-        $this->profesorCodigo = $profesorCodigo;
-
         return $this;
     }
 
+    public function removeProfesor(Profesor $profesor): static
+    {
+        if ($this->profesores->removeElement($profesor)) {
+            if ($profesor->getImparte() === $this) {
+                $profesor->setImparte(null);
+            }
+        }
+        return $this;
+    }
 }
