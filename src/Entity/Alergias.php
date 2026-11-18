@@ -5,6 +5,8 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AlergiasRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: AlergiasRepository::class)]
 #[ApiResource]
@@ -18,8 +20,9 @@ class Alergias
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $alergia = null;
 
-    #[ORM\Column]
-    private ?int $alumnoCodigo = null;
+    #[ORM\ManyToOne(inversedBy: 'alergias')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Alumnos $alumno = null;
 
     public function getId(): ?int
     {
@@ -34,19 +37,17 @@ class Alergias
     public function setAlergia(?string $alergia): static
     {
         $this->alergia = $alergia;
-
         return $this;
     }
 
-    public function getAlumnoCodigo(): ?int
+    public function getAlumno(): ?Alumnos
     {
-        return $this->alumnoCodigo;
+        return $this->alumno;
     }
 
-    public function setAlumnoCodigo(int $alumnoCodigo): static
+    public function setAlumno(?Alumnos $alumno): static
     {
-        $this->alumnoCodigo = $alumnoCodigo;
-
+        $this->alumno = $alumno;
         return $this;
     }
 }

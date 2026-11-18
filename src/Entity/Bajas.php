@@ -3,12 +3,26 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Repository\BajasRepository;
-use Doctrine\DBAL\Types\Types;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\State\BajaProcessor;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: BajasRepository::class)]
-#[ApiResource]
+#[ApiResource(operations: [
+    new GetCollection(),
+    new Get(),
+    new Post(processor: BajaProcessor::class),
+    new Put(processor: BajaProcessor::class),
+    new Patch(processor: BajaProcessor::class),
+    new Delete(),
+])]
 class Bajas
 {
     #[ORM\Id]
@@ -26,6 +40,9 @@ class Bajas
     #[ORM\JoinColumn(nullable: false)]
     private ?Administracion $idAdmin = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Alumnos $alumno = null;
 
     public function getId(): ?int
     {
@@ -40,7 +57,6 @@ class Bajas
     public function setFechaBaja(\DateTime $fechaBaja): static
     {
         $this->fechaBaja = $fechaBaja;
-
         return $this;
     }
 
@@ -52,7 +68,6 @@ class Bajas
     public function setEstado(string $estado): static
     {
         $this->estado = $estado;
-
         return $this;
     }
 
@@ -64,8 +79,17 @@ class Bajas
     public function setIdAdmin(?Administracion $idAdmin): static
     {
         $this->idAdmin = $idAdmin;
-
         return $this;
     }
 
+    public function getAlumno(): ?Alumnos
+    {
+        return $this->alumno;
+    }
+
+    public function setAlumno(?Alumnos $alumno): static
+    {
+        $this->alumno = $alumno;
+        return $this;
+    }
 }

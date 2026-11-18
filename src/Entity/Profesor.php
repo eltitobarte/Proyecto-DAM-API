@@ -3,32 +3,37 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Repository\ProfesorRepository;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\State\UserPasswordHasherProcessor;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 
-#[ORM\Entity(repositoryClass: ProfesorRepository::class)]
-#[ApiResource]
-class Profesor
+#[ORM\Entity(repositoryClass: ProfesorRepository::class)] // (o el repositorio correspondiente)
+#[ApiResource(operations: [
+    new GetCollection(),
+    new Get(),
+    new Post(processor: UserPasswordHasherProcessor::class),
+    new Put(processor: UserPasswordHasherProcessor::class),
+    new Patch(processor: UserPasswordHasherProcessor::class),
+    new Delete(),
+])]
+class Profesor extends Usuarios
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
     #[ORM\Column(length: 255)]
     private ?string $nombre = null;
 
     #[ORM\Column(length: 255)]
     private ?string $apellidos = null;
 
-    #[ORM\OneToOne(inversedBy: 'profesorCodigo', cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(inversedBy: 'profesores')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Aula $imparte = null;
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getNombre(): ?string
     {
@@ -38,7 +43,6 @@ class Profesor
     public function setNombre(string $nombre): static
     {
         $this->nombre = $nombre;
-
         return $this;
     }
 
@@ -50,7 +54,6 @@ class Profesor
     public function setApellidos(string $apellidos): static
     {
         $this->apellidos = $apellidos;
-
         return $this;
     }
 
@@ -59,10 +62,9 @@ class Profesor
         return $this->imparte;
     }
 
-    public function setImparte(Aula $imparte): static
+    public function setImparte(?Aula $imparte): static
     {
         $this->imparte = $imparte;
-
         return $this;
     }
 }
