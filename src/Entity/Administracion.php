@@ -15,7 +15,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 
-#[ORM\Entity(repositoryClass: ProfesorRepository::class)] // (o el repositorio correspondiente)
+#[ORM\Entity(repositoryClass: AdministracionRepository::class)] // (o el repositorio correspondiente)
 #[ApiResource(operations: [
     new GetCollection(),
     new Get(),
