@@ -16,16 +16,9 @@ class UsuariosRepository extends ServiceEntityRepository
         parent::__construct($registry, Usuarios::class);
     }
 
-    public function login(String $usuario, String $contrasenya): array
+    public function findOneByCorreoElectronico(string $correoElectronico): ?Usuarios
     {
-        return $this->createQueryBuilder("u")
-            ->andWhere("u.correo_electronico = :correo")
-            ->setParameter("correo", $usuario)
-            ->andWhere("u.contrasenya = :pass")
-            ->setParameter("pass", $contrasenya)
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getResult();
+        return $this->findOneBy(['correoElectronico' => $correoElectronico]);
     }
 
     //    /**

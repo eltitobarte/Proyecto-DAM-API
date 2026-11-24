@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\TutorLegalRepository;
+use App\State\UserPasswordHasherProcessor;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -19,9 +20,9 @@ use Doctrine\DBAL\Types\Types;
 #[ApiResource(operations: [
     new GetCollection(),
     new Get(),
-    new Post(),
-    new Put(),
-    new Patch(),
+    new Post(processor: UserPasswordHasherProcessor::class),
+    new Put(processor: UserPasswordHasherProcessor::class),
+    new Patch(processor: UserPasswordHasherProcessor::class),
     new Delete(),
 ])]
 

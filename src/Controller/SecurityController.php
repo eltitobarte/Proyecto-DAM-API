@@ -2,46 +2,59 @@
 
 namespace App\Controller;
 
-use App\Entity\Usuarios;
 use App\Repository\UsuariosRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 final class SecurityController extends AbstractController
 {
     #[Route('/api/login', name: 'api_login', methods: ['POST'])]
-    public function login(Request $request, UsuariosRepository $usuario, #[CurrentUser] ?Usuarios $user): JsonResponse
-    {
-        if (null === $user) {
+    public function login(
+        Request $request,
+        UsuariosRepository $usuariosRepository,
+        UserPasswordHasherInterface $passwordHasher
+    ): JsonResponse {
+        $payload = json_decode((string) $request->getContent(), true);
+
+        if (!\is_array($payload)) {
             return $this->json([
-                'message' => 'Credenciales inválidas o cabecera Content-Type: application/json ausente.',
-            ], Response::HTTP_UNAUTHORIZED);
+                'message' => 'El cuerpo de la petición debe ser un JSON válido.',
+            ], Response::HTTP_BAD_REQUEST);
         }
 
-        $payload = json_decode((string) $request->getContent(), true);
-        $email = \is_array($payload) && \is_string($payload['email'] ?? null) ? $payload['email'] : '';
-        $password = \is_array($payload) && \is_string($payload['password'] ?? null) ? $payload['password'] : '';
+        // Se admiten tanto los nombres de campo usados por la app (email/password)
+        // como los nombres de las entidades (correoElectronico/contrasenya).
+        $email = $payload['email'] ?? $payload['correoElectronico'] ?? null;
+        $password = $payload['password'] ?? $payload['contrasenya'] ?? null;
 
-        if (!$usuario->login($email, $password)) {
+        if (!\is_string($email) || !\is_string($password) || $email === '' || $password === '') {
             return $this->json([
-                'message' => 'Usuario o contraseña incorrecto'
+                'message' => 'Debes indicar el correo electrónico y la contraseña.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $usuario = $usuariosRepository->findOneByCorreoElectronico(trim($email));
+
+        if (null === $usuario || !$passwordHasher->isPasswordValid($usuario, $password)) {
+            return $this->json([
+                'message' => 'Usuario o contraseña incorrecto',
             ], Response::HTTP_UNAUTHORIZED);
         }
 
         // Como nombre y apellidos están en las clases hijas, los extraemos de forma segura
-        $nombre = method_exists($user, 'getNombre') ? $user->getNombre() : null;
-        $apellidos = method_exists($user, 'getApellidos') ? $user->getApellidos() : null;
+        $nombre = method_exists($usuario, 'getNombre') ? $usuario->getNombre() : null;
+        $apellidos = method_exists($usuario, 'getApellidos') ? $usuario->getApellidos() : null;
 
         return $this->json([
-            'id' => $user->getId(),
-            'correoElectronico' => $user->getUserIdentifier(),
+            'id' => $usuario->getId(),
+            'correoElectronico' => $usuario->getCorreoElectronico(),
             'nombre' => $nombre,
             'apellidos' => $apellidos,
-            'roles' => $user->getRoles(),
+            'roles' => $usuario->getRoles(),
         ], Response::HTTP_OK);
     }
 }

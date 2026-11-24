@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UsuariosRepository::class)]
 #[ORM\InheritanceType('JOINED')]
@@ -27,9 +28,13 @@ abstract class Usuarios implements UserInterface, PasswordAuthenticatedUserInter
     protected ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\Length(min: 8, minMessage: 'La contraseña debe tener al menos {{ limit }} caracteres.')]
     protected ?string $contrasenya = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Assert\NotBlank(message: 'El correo electrónico es obligatorio.')]
+    #[Assert\Email(message: 'El correo electrónico no es válido.')]
+    #[Assert\Length(max: 255, maxMessage: 'El correo electrónico no puede superar los {{ limit }} caracteres.')]
     protected ?string $correoElectronico = null;
 
     /**

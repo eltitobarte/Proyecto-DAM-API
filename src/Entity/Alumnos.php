@@ -6,22 +6,19 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\State\AlumnoProcessor;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AlumnosRepository::class)]
 #[ApiResource(operations: [
     new GetCollection(),
     new Get(),
     new Post(processor: AlumnoProcessor::class),
-    new Put(processor: AlumnoProcessor::class),
-    new Patch(processor: AlumnoProcessor::class),
     new Delete(),
 ])]
 class Alumnos
@@ -32,12 +29,18 @@ class Alumnos
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'El nombre del alumno es obligatorio.')]
+    #[Assert\Length(max: 255, maxMessage: 'El nombre no puede superar los {{ limit }} caracteres.')]
     private ?string $nombre = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Los apellidos del alumno son obligatorios.')]
+    #[Assert\Length(max: 255, maxMessage: 'Los apellidos no pueden superar los {{ limit }} caracteres.')]
     private ?string $apellidos = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Assert\NotNull(message: 'La fecha de nacimiento es obligatoria.')]
+    #[Assert\LessThanOrEqual(value: 'today', message: 'La fecha de nacimiento no puede ser futura.')]
     private ?\DateTime $fechaNacimiento = null;
 
     #[ORM\Column]
@@ -45,10 +48,12 @@ class Alumnos
 
     #[ORM\ManyToOne(inversedBy: 'pertenece')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: 'El aula del alumno es obligatoria.')]
     private ?Aula $aulaCodigo = null;
 
     #[ORM\ManyToOne(inversedBy: 'responsable')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: 'El tutor legal del alumno es obligatorio.')]
     private ?TutorLegal $tutorLegalCodigo = null;
 
     /**
