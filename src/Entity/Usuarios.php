@@ -2,43 +2,55 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
 use App\Repository\UsuariosRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UsuariosRepository::class)]
-#[ApiResource]
-class Usuarios
+#[ORM\InheritanceType('JOINED')]
+#[ORM\DiscriminatorColumn(name: 'rol', type: 'string', length: 30)]
+#[ORM\DiscriminatorMap([
+    'administrador'  => Administrador::class,
+    'administracion' => Administracion::class,
+    'tutor_legal'    => TutorLegal::class,
+    'profesor'       => Profesor::class,
+])]
+abstract class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    protected ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $rol = null;
+    #[Assert\Length(min: 8, minMessage: 'La contraseña debe tener al menos {{ limit }} caracteres.')]
+    protected ?string $contrasenya = null;
 
-    #[ORM\Column(length: 8)]
-    private ?string $contrasenya = null;
+    #[ORM\Column(length: 255, unique: true)]
+    #[Assert\NotBlank(message: 'El correo electrónico es obligatorio.')]
+    #[Assert\Email(message: 'El correo electrónico no es válido.')]
+    #[Assert\Length(max: 255, maxMessage: 'El correo electrónico no puede superar los {{ limit }} caracteres.')]
+    protected ?string $correoElectronico = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $correoElectronico = null;
+    /**
+     * @var Collection<int, Telefonos>
+     */
+    #[ORM\OneToMany(targetEntity: Telefonos::class, mappedBy: 'usuario', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    protected Collection $telefonos;
+
+    public function __construct()
+    {
+        $this->telefonos = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getRol(): ?string
-    {
-        return $this->rol;
-    }
-
-    public function setRol(string $rol): static
-    {
-        $this->rol = $rol;
-
-        return $this;
     }
 
     public function getContrasenya(): ?string
@@ -49,7 +61,6 @@ class Usuarios
     public function setContrasenya(string $contrasenya): static
     {
         $this->contrasenya = $contrasenya;
-
         return $this;
     }
 
@@ -61,7 +72,64 @@ class Usuarios
     public function setCorreoElectronico(string $correoElectronico): static
     {
         $this->correoElectronico = $correoElectronico;
-
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Telefonos>
+     */
+    public function getTelefonos(): Collection
+    {
+        return $this->telefonos;
+    }
+
+    public function addTelefono(Telefonos $telefono): static
+    {
+        if (!$this->telefonos->contains($telefono)) {
+            $this->telefonos->add($telefono);
+            $telefono->setUsuario($this);
+        }
+        return $this;
+    }
+
+    public function removeTelefono(Telefonos $telefono): static
+    {
+        if ($this->telefonos->removeElement($telefono)) {
+            if ($telefono->getUsuario() === $this) {
+                $telefono->setUsuario(null);
+            }
+        }
+        return $this;
+    }
+
+    // --- Métodos obligatorios de Symfony Security ---
+
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->correoElectronico;
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->contrasenya;
+    }
+
+    public function getRoles(): array
+    {
+        // Asigna automáticamente el rol según la subclase instanciada
+        $rol = match (true) {
+            $this instanceof Administrador => 'ROLE_ADMINISTRADOR',
+            $this instanceof Administracion => 'ROLE_ADMINISTRACION',
+            $this instanceof Profesor => 'ROLE_PROFESOR',
+            $this instanceof TutorLegal => 'ROLE_TUTOR_LEGAL',
+            default => 'ROLE_USER',
+        };
+
+        return [$rol, 'ROLE_USER'];
+    }
+
+    public function eraseCredentials(): void
+    {
+        // Si guardaras datos temporales sensibles, se limpiarían aquí
     }
 }

@@ -5,6 +5,8 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\TelefonosRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: TelefonosRepository::class)]
 #[ApiResource]
@@ -18,8 +20,9 @@ class Telefonos
     #[ORM\Column(length: 24)]
     private ?string $telefono = null;
 
-    #[ORM\Column]
-    private ?int $idUsuario = null;
+    #[ORM\ManyToOne(inversedBy: 'telefonos')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Usuarios $usuario = null;
 
     public function getId(): ?int
     {
@@ -34,19 +37,17 @@ class Telefonos
     public function setTelefono(string $telefono): static
     {
         $this->telefono = $telefono;
-
         return $this;
     }
 
-    public function getIdUsuario(): ?int
+    public function getUsuario(): ?Usuarios
     {
-        return $this->idUsuario;
+        return $this->usuario;
     }
 
-    public function setIdUsuario(int $idUsuario): static
+    public function setUsuario(?Usuarios $usuario): static
     {
-        $this->idUsuario = $idUsuario;
-
+        $this->usuario = $usuario;
         return $this;
     }
 }

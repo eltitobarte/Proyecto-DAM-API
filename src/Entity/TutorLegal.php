@@ -3,19 +3,32 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\TutorLegalRepository;
+use App\State\UserPasswordHasherProcessor;
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 
-#[ORM\Entity(repositoryClass: TutorLegalRepository::class)]
-#[ApiResource]
-class TutorLegal
+#[ORM\Entity(repositoryClass: TutorLegalRepository::class)] // (o el repositorio correspondiente)
+#[ApiResource(operations: [
+    new GetCollection(),
+    new Get(),
+    new Post(processor: UserPasswordHasherProcessor::class),
+    new Put(processor: UserPasswordHasherProcessor::class),
+    new Patch(processor: UserPasswordHasherProcessor::class),
+    new Delete(),
+])]
+
+class TutorLegal extends Usuarios
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+  
 
     #[ORM\Column(length: 255)]
     private ?string $nombre = null;
@@ -37,13 +50,9 @@ class TutorLegal
 
     public function __construct()
     {
+        parent::__construct();
         $this->responsable = new ArrayCollection();
         $this->chatea = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getNombre(): ?string

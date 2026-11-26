@@ -5,6 +5,8 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\IncidenciasRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: IncidenciasRepository::class)]
 #[ApiResource]
@@ -18,8 +20,9 @@ class Incidencias
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $incidencia = null;
 
-    #[ORM\Column]
-    private ?int $registroCodigo = null;
+    #[ORM\ManyToOne(inversedBy: 'incidencias')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?RegistroDiario $registroDiario = null;
 
     public function getId(): ?int
     {
@@ -34,19 +37,17 @@ class Incidencias
     public function setIncidencia(?string $incidencia): static
     {
         $this->incidencia = $incidencia;
-
         return $this;
     }
 
-    public function getRegistroCodigo(): ?int
+    public function getRegistroDiario(): ?RegistroDiario
     {
-        return $this->registroCodigo;
+        return $this->registroDiario;
     }
 
-    public function setRegistroCodigo(int $registroCodigo): static
+    public function setRegistroDiario(?RegistroDiario $registroDiario): static
     {
-        $this->registroCodigo = $registroCodigo;
-
+        $this->registroDiario = $registroDiario;
         return $this;
     }
 }

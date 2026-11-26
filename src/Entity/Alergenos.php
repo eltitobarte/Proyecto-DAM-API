@@ -2,10 +2,14 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AlergenosRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: AlergenosRepository::class)]
+#[ApiResource]
 class Alergenos
 {
     #[ORM\Id]
@@ -16,8 +20,9 @@ class Alergenos
     #[ORM\Column(length: 50)]
     private ?string $alergeno = null;
 
-    #[ORM\Column]
-    private ?int $comidaCodigo = null;
+    #[ORM\ManyToOne(inversedBy: 'alergenos')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Menu $menu = null;
 
     public function getId(): ?int
     {
@@ -32,19 +37,17 @@ class Alergenos
     public function setAlergeno(string $alergeno): static
     {
         $this->alergeno = $alergeno;
-
         return $this;
     }
 
-    public function getComidaCodigo(): ?int
+    public function getMenu(): ?Menu
     {
-        return $this->comidaCodigo;
+        return $this->menu;
     }
 
-    public function setComidaCodigo(int $comidaCodigo): static
+    public function setMenu(?Menu $menu): static
     {
-        $this->comidaCodigo = $comidaCodigo;
-
+        $this->menu = $menu;
         return $this;
     }
 }
